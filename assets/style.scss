@@ -1,0 +1,90 @@
+.resize-container{
+    position: relative;
+}
+
+.resize {
+    display: flex;
+    position: absolute;
+
+    &__left,
+    &__right{
+        top: 0;
+        bottom: 0;
+        width: 10px;
+        height: auto;
+        justify-content: center;
+        cursor: e-resize;
+    }
+
+    &__right{
+        right: -5px
+    }
+
+    &__left{
+        left: -5px;
+    }
+
+
+
+    &__top,
+    &__top--left,
+    &__top--right,
+    &__bottom--left,
+    &__bottom--right,
+    &__bottom{
+        left: 0;
+        right: 0;
+        height: 10px;
+        width: auto;
+        align-items: center;
+        cursor: s-resize;
+    }
+
+    &__top--left,
+    &__top--right,
+    &__top{
+        top: -5px;
+
+        &--left,
+        &--right{
+            width: 10px;
+            height: 10px;
+        }
+
+        &--left{
+            left: -5px;
+            right: auto;
+            cursor: se-resize;
+        }
+
+        &--right{
+            right: -5px;
+            left: auto;
+            cursor: nesw-resize;
+        }
+    }
+
+    &__bottom--left,
+    &__bottom--right,
+    &__bottom{
+        bottom: -5px;
+
+        &--left,
+        &--right{
+            width: 10px;
+            height: 10px;
+        }
+
+        &--left{
+            left: -5px;
+            right: auto;
+            cursor: nesw-resize;
+        }
+
+        &--right{
+            right: -5px;
+            left: auto;
+            cursor: se-resize;
+        }
+    }
+}
