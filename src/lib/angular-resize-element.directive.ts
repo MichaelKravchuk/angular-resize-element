@@ -55,7 +55,7 @@ export class AngularResizeElementDirective {
 
         this.mouseUpListener = this.renderer2.listen('document', 'mouseup', event => this.onMouseUp(event));
         this.mouseMoveListener = this.renderer2.listen('document', 'mousemove', event => this.onMouseMove(event));
-        this.renderer2.addClass(this.elementRef.nativeElement, 'resizes');
+        this.renderer2.addClass(this.elementRef.nativeElement, this.applyClass);
     }
 
 
@@ -87,6 +87,8 @@ export class AngularResizeElementDirective {
         } else {
             this.targetElementWidthValue = 0;
             this.targetElementHeightValue = 0;
+            this.targetElementTopValue = 0;
+            this.targetElementLeftValue = 0;
         }
     }
 
@@ -185,8 +187,8 @@ export class AngularResizeElementDirective {
             originalLeftValue: this.targetElementLeftValue,
             differenceWidthValue: this.targetElementWidthValue - currentWidthValue,
             differenceHeightValue: this.targetElementHeightValue - currentHeightValue,
-            differenceTopValue: this.targetElementTopValue - diffTopValue,
-            differenceLeftValue: this.targetElementLeftValue - diffLeftValue,
+            differenceTopValue: diffTopValue,
+            differenceLeftValue: diffLeftValue,
             direction: this.direction,
         };
     }
