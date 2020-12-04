@@ -1,16 +1,7 @@
-import {
-    Directive,
-    ElementRef,
-    EventEmitter,
-    HostListener,
-    Input,
-    Output,
-    Renderer2,
-} from '@angular/core';
+import {Directive, ElementRef, EventEmitter, HostListener, Input, Output, Renderer2} from '@angular/core';
 import {AngularResizeElementEvent} from './angular-resize-element-event.interface';
 import {AngularResizeElementDirection} from './angular-resize-element.enum';
 
-// @ts-ignore
 @Directive({
     selector: '[resize], [resizeStart], [resizeEnd]'
 })
@@ -21,39 +12,41 @@ export class AngularResizeElementDirective {
     private targetElementWidthValue: number;
     private targetElementHeightValue: number;
 
+    private targetElementTopValue: number;
+    private targetElementLeftValue: number;
+
     private originalEvent: MouseEvent;
 
     @Input()
-    public targetElement: HTMLElement | ElementRef;
+    public readonly targetElement: HTMLElement | ElementRef;
 
     @Input()
-    public direction: AngularResizeElementDirection;
+    public readonly direction: AngularResizeElementDirection;
 
     @Input()
-    public proportionalResize: boolean;
+    public readonly proportionalResize: boolean;
 
     @Input()
-    public applyClass = 'resizes';
+    public readonly applyClass = 'resizes';
 
     @Output()
-    public resizeStart: EventEmitter<AngularResizeElementEvent> = new EventEmitter();
+    public readonly resizeStart: EventEmitter<AngularResizeElementEvent> = new EventEmitter();
 
     @Output()
-    public resize: EventEmitter<AngularResizeElementEvent> = new EventEmitter();
+    public readonly resize: EventEmitter<AngularResizeElementEvent> = new EventEmitter();
 
     @Output()
-    public resizeEnd: EventEmitter<AngularResizeElementEvent> = new EventEmitter();
-
+    public readonly resizeEnd: EventEmitter<AngularResizeElementEvent> = new EventEmitter();
 
 
     constructor(private readonly elementRef: ElementRef,
-                private readonly renderer2: Renderer2,
-    ) {}
-
+                private readonly renderer2: Renderer2
+    ) {
+    }
 
 
     @HostListener('mousedown', ['$event'])
-    private onMouseDown(evt: MouseEvent): void {
+    public onMouseDown(evt: MouseEvent): void {
         evt.preventDefault();
 
         this.setOriginalData(evt);
@@ -64,7 +57,6 @@ export class AngularResizeElementDirective {
         this.mouseMoveListener = this.renderer2.listen('document', 'mousemove', event => this.onMouseMove(event));
         this.renderer2.addClass(this.elementRef.nativeElement, 'resizes');
     }
-
 
 
     private onMouseUp(evt: MouseEvent): void {
@@ -78,11 +70,9 @@ export class AngularResizeElementDirective {
     }
 
 
-
     private onMouseMove(evt: MouseEvent): void {
         this.resize.emit(this.generateValuesForEvent(evt));
     }
-
 
 
     private setOriginalData(originalEvent: MouseEvent) {
@@ -92,7 +82,8 @@ export class AngularResizeElementDirective {
             const dataSource = this.targetElement instanceof ElementRef ? this.targetElement.nativeElement : this.targetElement;
             this.targetElementWidthValue = dataSource.offsetWidth;
             this.targetElementHeightValue = dataSource.offsetHeight;
-
+            this.targetElementTopValue = dataSource.offsetTop;
+            this.targetElementLeftValue = dataSource.offsetLeft;
         } else {
             this.targetElementWidthValue = 0;
             this.targetElementHeightValue = 0;
@@ -100,47 +91,63 @@ export class AngularResizeElementDirective {
     }
 
 
-
     private generateValuesForEvent(evt: MouseEvent): AngularResizeElementEvent {
         const originalXValue = this.originalEvent.clientX;
         const originalYValue = this.originalEvent.clientY;
 
-        let currentWidthValue = evt.clientX - originalXValue;
-        let currentHeightValue = evt.clientY - originalYValue;
+        let diffWidthValue = evt.clientX - originalXValue;
+        let diffHeightValue = evt.clientY - originalYValue;
+        let diffTopValue = diffHeightValue;
+        let diffLeftValue = diffWidthValue;
 
         switch (this.direction) {
-            case AngularResizeElementDirection.TOP:
-            case AngularResizeElementDirection.TOP_RIGHT: {
-                currentHeightValue *= -1;
+            case AngularResizeElementDirection.TOP: {
+                diffHeightValue *= -1;
+                diffWidthValue = 0;
+                diffLeftValue = 0;
                 break;
             }
-            case AngularResizeElementDirection.BOTTOM_LEFT:
+            case AngularResizeElementDirection.TOP_RIGHT: {
+                diffHeightValue *= -1;
+                diffLeftValue = 0;
+                break;
+            }
+            case AngularResizeElementDirection.RIGHT: {
+                diffHeightValue = 0;
+                diffTopValue = 0;
+                diffLeftValue = 0;
+                break;
+            }
+            case AngularResizeElementDirection.BOTTOM_RIGHT: {
+                diffTopValue = 0;
+                diffLeftValue = 0;
+                break;
+            }
+            case AngularResizeElementDirection.BOTTOM: {
+                diffWidthValue = 0;
+                diffLeftValue = 0;
+                diffTopValue = 0;
+                break;
+            }
+            case AngularResizeElementDirection.BOTTOM_LEFT: {
+                diffWidthValue *= -1;
+                diffTopValue = 0;
+                break;
+            }
             case AngularResizeElementDirection.LEFT: {
-                currentWidthValue *= -1;
+                diffWidthValue *= -1;
+                diffHeightValue = 0;
+                diffTopValue = 0;
                 break;
             }
             case AngularResizeElementDirection.TOP_LEFT: {
-                currentHeightValue *= -1;
-                currentWidthValue *= -1;
-                break;
+                diffHeightValue *= -1;
+                diffWidthValue *= -1;
             }
         }
 
-        switch (this.direction) {
-            case AngularResizeElementDirection.TOP:
-            case AngularResizeElementDirection.BOTTOM: {
-                currentWidthValue = 0;
-                break;
-            }
-            case AngularResizeElementDirection.RIGHT:
-            case AngularResizeElementDirection.LEFT: {
-                currentHeightValue = 0;
-                break;
-            }
-        }
-
-        currentWidthValue += this.targetElementWidthValue;
-        currentHeightValue += this.targetElementHeightValue;
+        let currentWidthValue = this.targetElementWidthValue + diffWidthValue;
+        let currentHeightValue = this.targetElementHeightValue + diffHeightValue;
 
         if (this.proportionalResize) {
             if (currentWidthValue > currentHeightValue) {
@@ -150,14 +157,36 @@ export class AngularResizeElementDirective {
             }
         }
 
+        if (currentHeightValue <= 1) {
+            diffTopValue += currentHeightValue;
+        }
+
+        if (currentWidthValue <= 1) {
+            diffLeftValue += currentWidthValue;
+        }
+
+        if (currentWidthValue <= 0) {
+            currentWidthValue = 0;
+        }
+
+        if (currentHeightValue <= 0) {
+            currentHeightValue = 0;
+        }
+
         return {
             originalEvent: this.originalEvent,
             currentWidthValue: currentWidthValue,
             currentHeightValue: currentHeightValue,
+            currentTopValue: this.targetElementTopValue + diffTopValue,
+            currentLeftValue: this.targetElementLeftValue + diffLeftValue,
             originalWidthValue: this.targetElementWidthValue,
             originalHeightValue: this.targetElementHeightValue,
+            originalTopValue: this.targetElementTopValue,
+            originalLeftValue: this.targetElementLeftValue,
             differenceWidthValue: this.targetElementWidthValue - currentWidthValue,
             differenceHeightValue: this.targetElementHeightValue - currentHeightValue,
+            differenceTopValue: this.targetElementTopValue - diffTopValue,
+            differenceLeftValue: this.targetElementLeftValue - diffLeftValue,
             direction: this.direction,
         };
     }

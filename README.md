@@ -71,6 +71,8 @@ Or if you use angular component (and look at TS)
   public onResize(evt: AngularResizeElementEvent): void {
         this.data.width = evt.currentWidthValue;
         this.data.height = evt.currentHeightValue;
+        this.data.top = evt.currentTopValue;
+        this.data.left = evt.currentLeftValue;
   }
 ```
 
@@ -86,7 +88,7 @@ and add ViewChild if you use angular component  (don`t forget about breaking cha
 ```
  "styles": [
     ...
-    "node_modules/angular-resize-element/bundles/style.css"
+    "node_modules/angular-resize-element/bundles/style.scss"
 ],
 ```
 
@@ -110,6 +112,14 @@ interface AngularResizeElementEvent {
     originalHeightValue: number;
     differenceWidthValue: number;
     differenceHeightValue: number;
+    
+    currentTopValue: number;
+    currentLeftValue: number;
+    originalTopValue: number;
+    originalLeftValue: number;
+    differenceTopValue: number;
+    differenceLeftValue: number;
+
     originalEvent: MouseEvent;
 }
 ```
