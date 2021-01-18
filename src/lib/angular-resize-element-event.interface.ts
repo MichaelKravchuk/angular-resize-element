@@ -1,5 +1,12 @@
 import {AngularResizeElementDirection} from './angular-resize-element.enum';
 
+export interface Position {
+    top: number;
+    width: number;
+    height: number;
+    left: number;
+}
+
 export interface AngularResizeElementEvent {
     currentWidthValue: number;
     currentHeightValue: number;
