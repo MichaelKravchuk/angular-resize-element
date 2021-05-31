@@ -10,6 +10,9 @@
         "@angular/core": "^12.0.2"
     },
     "license": "MIT",
+    "dependencies": {
+      "tslib": "^2.0.0"
+    },
     "keywords": [
         "angular",
         "angular2",
