@@ -1,11 +1,23 @@
-import {Directive, ElementRef, EventEmitter, HostListener, Input, Output, Renderer2} from '@angular/core';
+import {
+    Directive,
+    ElementRef,
+    EventEmitter,
+    HostBinding,
+    Input,
+    OnChanges,
+    OnDestroy,
+    Output,
+    Renderer2,
+    SimpleChanges
+} from '@angular/core';
 import {AngularResizeElementEvent, Position} from './angular-resize-element-event.interface';
 import {AngularResizeElementDirection} from './angular-resize-element.enum';
 
 @Directive({
     selector: '[resize], [resizeStart], [resizeEnd]'
 })
-export class AngularResizeElementDirective {
+export class AngularResizeElementDirective implements OnChanges, OnDestroy {
+    private mouseClickListener: () => void;
     private mouseUpListener: () => void;
     private mouseMoveListener: () => void;
 
@@ -41,14 +53,43 @@ export class AngularResizeElementDirective {
     @Output()
     public readonly resizeEnd: EventEmitter<AngularResizeElementEvent> = new EventEmitter();
 
+    @Input()
+    @HostBinding('attr.draggable')
+    public useDrag;
 
     constructor(private readonly elementRef: ElementRef,
                 private readonly renderer2: Renderer2
     ) {
+        this.listenMouseDownEvent();
     }
 
+    public ngOnChanges(changes: SimpleChanges) {
+        if (changes.useDrag) {
+            this.listenMouseDownEvent();
+        }
+    }
 
-    @HostListener('mousedown', ['$event'])
+    public ngOnDestroy() {
+        if (this.mouseClickListener) {
+            this.mouseClickListener();
+        }
+        if (this.mouseUpListener) {
+            this.mouseUpListener();
+        }
+        if (this.mouseMoveListener) {
+            this.mouseMoveListener();
+        }
+    }
+
+    public listenMouseDownEvent(): void {
+        if (this.mouseClickListener) {
+            this.mouseClickListener();
+        }
+
+        const event = this.useDrag ? 'dragstart' : 'mousedown';
+        this.mouseClickListener = this.renderer2.listen(this.elementRef.nativeElement, event, evt => this.onMouseDown(evt));
+    }
+
     public onMouseDown(evt: MouseEvent): void {
         evt.preventDefault();
 
