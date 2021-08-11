@@ -5,6 +5,7 @@
 .resize {
     display: flex;
     position: absolute;
+    z-index: 1;
 
     &__left,
     &__right{
@@ -49,6 +50,7 @@
         &--right{
             width: 10px;
             height: 10px;
+            z-index: 2;
         }
 
         &--left{
@@ -73,6 +75,7 @@
         &--right{
             width: 10px;
             height: 10px;
+            z-index: 2;
         }
 
         &--left{
